@@ -1,0 +1,4 @@
+javac -d classes src\*.java
+java JavaApplication1
+jar cfm lab1.jar manifest\MANIFEST.MF -C classes .
+java -jar lab1.jar
