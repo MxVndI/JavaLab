@@ -2,50 +2,22 @@ package ru.practicum;
 
 import ru.practicum.map.MapStrategy;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.Instant;
 import java.util.Random;
 
 public class Game {
     private int[][] board;
     private int emptyRow;
-    private int playTime;
-
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public int getEmptyCol() {
-        return emptyCol;
-    }
-
-    public void setEmptyCol(int emptyCol) {
-        this.emptyCol = emptyCol;
-    }
-
-    public int getEmptyRow() {
-        return emptyRow;
-    }
-
-    public void setEmptyRow(int emptyRow) {
-        this.emptyRow = emptyRow;
-    }
+    private long playTime;
+    private int emptyCol;
+    private int size;
 
     public int[][] getBoard() {
         return board;
     }
-
-    public void setBoard(int[][] board) {
-        this.board = board;
-    }
-
-    private int emptyCol;
-    private int size;
 
     public void start(MapStrategy mapStrategy) {
         this.board = mapStrategy.getBoard();
@@ -54,7 +26,7 @@ public class Game {
         this.emptyCol = mapStrategy.getEmptyTileCol();
         initBoard();
         shuffleMap();
-        this.playTime = LocalTime.now().getSecond();
+        this.playTime = Instant.now().getEpochSecond();
     }
 
     private void initBoard() {
@@ -69,24 +41,39 @@ public class Game {
 
     private void shuffleMap() {
         Random random = new Random();
-        for (int i = 0; i < 1000; i++) {
-            int directionX = random.nextInt(-1, 2);
-            int directionY = random.nextInt(-1, 2);
-            directionX = emptyCol + directionX;
-            directionY = emptyRow + directionY;
-            if (isValidMove(directionX, directionY)) {
-                if (isAdjacent(directionX, directionY))
-                swapTiles(directionX, directionY);
+        int newCordX = 0, newCordY = 0;
+        for (int i = 0; i < 10000; i++) {
+            int direction = random.nextInt(1, 5);
+            switch (direction) {
+                case 1:
+                    newCordX = emptyCol + 1;
+                    newCordY = emptyRow;
+                    break;
+                case 2:
+                    newCordX = emptyCol - 1;
+                    newCordY = emptyRow;
+                    break;
+                case 3:
+                    newCordX = emptyCol;
+                    newCordY = emptyRow + 1;
+                    break;
+                case 4:
+                    newCordX = emptyCol;
+                    newCordY = emptyRow - 1;
+                    break;
             }
+            swapTiles(newCordY, newCordX);
         }
     }
 
     public void swapTiles(int row, int col) {
-        int temp = board[row][col];
-        board[row][col] = 0;
-        board[emptyRow][emptyCol] = temp;
-        emptyRow = row;
-        emptyCol = col;
+        if (isValidMove(row, col) && isAdjacent(row, col)) {
+            int temp = board[row][col];
+            board[row][col] = 0;
+            board[emptyRow][emptyCol] = temp;
+            emptyRow = row;
+            emptyCol = col;
+        }
     }
 
     private boolean isAdjacent(int row, int col) {
@@ -110,8 +97,24 @@ public class Game {
                 }
             }
         }
-        this.playTime = LocalTime.now().getSecond() - playTime;
+        this.playTime = Instant.now().getEpochSecond() - playTime;
         System.out.println("Вы решали " + this.playTime + " секунд");
+        saveResultToFile();
         return true;
+    }
+
+    private void saveResultToFile() {
+        try (FileWriter writer = new FileWriter("bestResult.txt", true);
+             FileReader reader = new FileReader("bestResult.txt")) {
+            long bestResult = Long.valueOf(reader.read());
+            if (playTime < bestResult) {
+                writer.write(String.valueOf(playTime));
+                writer.flush();
+            } else {
+                writer.write(String.valueOf(bestResult));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }

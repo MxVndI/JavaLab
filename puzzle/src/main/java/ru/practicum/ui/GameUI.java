@@ -36,7 +36,6 @@ public class GameUI extends JFrame {
         setSize(600, 600);
         setLocationRelativeTo(null);
         setResizable(false);
-
         showMainMenu();
     }
 
@@ -63,12 +62,15 @@ public class GameUI extends JFrame {
         startButton.addActionListener(e -> {
             String selected = (String) sizeComboBox.getSelectedItem();
             MapStrategy strategy;
-            if (selected.equals("5x5")) {
-                strategy = new FiveMapStrategy();
-            } else if (selected.equals("6x6")) {
-                strategy = new SixMapStrategy();
-            } else {
-                strategy = new SevenMapStrategy();
+            switch (selected) {
+                case "5x5":
+                    strategy = new FiveMapStrategy();
+                    break;
+                case "6x6":
+                    strategy = new SixMapStrategy();
+                    break;
+                default:
+                    strategy = new SevenMapStrategy();
             }
             startGame(strategy);
         });
@@ -207,20 +209,9 @@ public class GameUI extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (isAdjacent(row, col)) {
-                swapTiles(row, col);
+            game.swapTiles(row, col);
                 updateBoard();
-            }
         }
-    }
-
-    private boolean isAdjacent(int row, int col) {
-        return (Math.abs(row - game.getEmptyRow()) == 1 && col == game.getEmptyCol()) ||
-                (Math.abs(col - game.getEmptyCol()) == 1 && row == game.getEmptyRow());
-    }
-
-    private void swapTiles(int row, int col) {
-        game.swapTiles(row, col);
     }
 
     public static void main(String[] args) {
