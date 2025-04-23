@@ -1,9 +1,37 @@
 package ru.practicum.map;
 
-public interface MapStrategy {
-    int[][] getBoard();
+import ru.practicum.model.Tile;
 
-    int getEmptyTileCol();
+public abstract class MapStrategy {
+    public MapStrategy(int size) {
+        this.size = size;
+    }
 
-    int getEmptyTileRow();
+    protected int size = 5;
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public Tile[][] getBoard() {
+        Tile[][] board = new Tile[size][size];
+        int value = 1;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                board[i][j] = new Tile(value++, i, j);
+            }
+        }
+        int emptyRow = getEmptyTileRow();
+        int emptyCol = getEmptyTileCol();
+        board[emptyRow][emptyCol] = new Tile(0, emptyRow, emptyCol);
+        return board;
+    }
+
+    public int getEmptyTileCol() {
+        return size - 1;
+    }
+
+    public int getEmptyTileRow() {
+        return size - 1;
+    }
 }

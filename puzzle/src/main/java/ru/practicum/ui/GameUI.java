@@ -1,49 +1,47 @@
 package ru.practicum.ui;
 
-import ru.practicum.Game;
-import ru.practicum.map.MapStrategy;
-import ru.practicum.map.FiveMapStrategy;
-import ru.practicum.map.SevenMapStrategy;
-import ru.practicum.map.SixMapStrategy;
+import ru.practicum.GameController;
+import ru.practicum.GameModel;
+import ru.practicum.ModelListener;
+import ru.practicum.map.*;
+import ru.practicum.model.Tile;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class GameUI extends JFrame {
-    private Game game;
-    private MapStrategy currentStrategy;
+public class GameUI extends JFrame implements ModelListener {
+    private GameModel model;
+    private GameController controller;
     private JPanel boardPanel;
-    private JButton[][] tiles;
+    private JButton[][] tileButtons;
 
     public GameUI() {
+        initializeUI();
+        showMainMenu();
+    }
+
+    private void initializeUI() {
         setTitle("Пятнашки");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(600, 600);
         setLocationRelativeTo(null);
         setResizable(false);
-        showMainMenu();
+        getContentPane().setBackground(new Color(245, 245, 245));
+    }
+
+    public void initialize(GameModel model, GameController controller) {
+        this.model = model;
+        this.controller = controller;
+        model.addListener(this);
+        createGameBoard();
     }
 
     private void showMainMenu() {
-        getContentPane().removeAll();
+        getContentPane().removeAll(); // Очистка предыдущего содержимого
 
-        JPanel menuPanel = new JPanel();
-        menuPanel.setLayout(new GridLayout(4, 1, 0, 20));
+        JPanel menuPanel = new JPanel(new GridLayout(4, 1, 0, 20));
         menuPanel.setBackground(new Color(245, 245, 245));
 
         JLabel titleLabel = new JLabel("Пятнашки", SwingConstants.CENTER);
@@ -75,7 +73,7 @@ public class GameUI extends JFrame {
             startGame(strategy);
         });
 
-        JButton exitButton = createStyledButton("Выход");
+        JButton exitButton = createStyledButton("Выйти");
         exitButton.addActionListener(e -> System.exit(0));
 
         menuPanel.add(startButton);
@@ -86,138 +84,131 @@ public class GameUI extends JFrame {
         repaint();
     }
 
-    private JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Arial", Font.BOLD, 20));
-        button.setBackground(new Color(70, 130, 180));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return button;
-    }
-
-    private void startGame(MapStrategy strategy) {
-        this.currentStrategy = strategy;
-        this.game = new Game();
-        this.game.start(strategy);
-        createBoard();
-    }
-
-    private void createBoard() {
+    private void createGameBoard() {
         getContentPane().removeAll();
 
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(new BorderLayout());
-        topPanel.setBackground(new Color(245, 245, 245));
-        topPanel.setPreferredSize(new Dimension(600, 100));
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(createBackButton(), BorderLayout.WEST);
+        topPanel.add(new JLabel("Пятнашки", SwingConstants.CENTER), BorderLayout.CENTER);
 
-        JLabel titleLabel = new JLabel("Пятнашки", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
-        titleLabel.setForeground(new Color(50, 50, 50));
-        topPanel.add(titleLabel, BorderLayout.CENTER);
-
-        JButton backButton = createStyledButton("Назад");
-        backButton.addActionListener(e -> showMainMenu());
-        topPanel.add(backButton, BorderLayout.WEST);
+        initBoardPanel();
 
         add(topPanel, BorderLayout.NORTH);
-
-        boardPanel = new JPanel(new GridLayout(
-                currentStrategy.getBoard().length,
-                currentStrategy.getBoard()[0].length
-        ));
-        boardPanel.setBackground(new Color(245, 245, 245));
-
-        int size = currentStrategy.getBoard().length;
-        tiles = new JButton[size][size];
-
-        for (int row = 0; row < size; row++) {
-            for (int col = 0; col < size; col++) {
-                int value = game.getBoard()[row][col];
-                JButton tile = new JButton(value == 0 ? "" : String.valueOf(value));
-                tile.setFont(new Font("Arial", Font.BOLD, 24));
-                tile.setFocusPainted(false);
-
-                if (value != 0) {
-                    tile.setBackground(new Color(70, 130, 180));
-                    tile.setForeground(Color.WHITE);
-                    tile.setBorder(BorderFactory.createLineBorder(new Color(50, 50, 50), 2));
-                    tile.addActionListener(new TileClickListener(row, col));
-                } else {
-                    tile.setBackground(new Color(240, 240, 240));
-                    tile.setBorderPainted(false);
-                }
-
-                tiles[row][col] = tile;
-                boardPanel.add(tile);
-            }
-        }
-
         add(boardPanel, BorderLayout.CENTER);
+
         revalidate();
         repaint();
     }
 
-    private void updateBoard() {
-        int size = currentStrategy.getBoard().length;
+    private JButton createBackButton() {
+        JButton button = new JButton("Назад");
+        button.setFont(new Font("Arial", Font.PLAIN, 16));
+        button.setBackground(new Color(220, 220, 220));
+        button.addActionListener(e -> showMainMenu());
+        return button;
+    }
+
+    private void initBoardPanel() {
+        Tile[][] board = model.getBoard();
+        int size = board.length;
+        boardPanel = new JPanel(new GridLayout(size, size, 5, 5));
+        boardPanel.setBackground(new Color(245, 245, 245));
+        tileButtons = new JButton[size][size];
+
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
-                int value = game.getBoard()[row][col];
-                JButton tile = tiles[row][col];
-
-                tile.setText(value == 0 ? "" : String.valueOf(value));
-                tile.setBackground(value == 0 ?
-                        new Color(240, 240, 240) :
-                        new Color(70, 130, 180));
-
-                ActionListener[] listeners = tile.getActionListeners();
-                for (ActionListener listener : listeners) {
-                    tile.removeActionListener(listener);
-                }
-
-                if (value != 0) {
-                    tile.addActionListener(new TileClickListener(row, col));
-                }
-            }
-        }
-
-        if (game.isSolved()) {
-            JOptionPane.showMessageDialog(this,
-                    "Поздравляем! Вы собрали головоломку!",
-                    "Победа",
-                    JOptionPane.INFORMATION_MESSAGE);
-            int response = JOptionPane.showConfirmDialog(this,
-                    "Хотите сыграть снова?", "Новая игра",
-                    JOptionPane.YES_NO_OPTION);
-            if (response == JOptionPane.YES_OPTION) {
-                showMainMenu();
-            } else {
-                System.exit(0);
+                Tile tile = board[row][col];
+                JButton button = createTileButton(tile);
+                tileButtons[row][col] = button;
+                boardPanel.add(button);
             }
         }
     }
 
-    private class TileClickListener implements ActionListener {
-        private int row;
-        private int col;
+    private JButton createTileButton(Tile tile) {
+        JButton button = new JButton();
+        button.setFont(new Font("Arial", Font.BOLD, 24));
+        button.setFocusPainted(false);
+        button.setPreferredSize(new Dimension(80, 80));
+        button.setBackground(tile.getValue() == 0 ?
+                new Color(240, 240, 240) : new Color(70, 130, 180));
+        button.setForeground(Color.WHITE);
 
-        public TileClickListener(int row, int col) {
-            this.row = row;
-            this.col = col;
+        if (tile.getValue() != 0) {
+            button.setText(String.valueOf(tile.getValue()));
+            button.addActionListener(new TileClickListener(tile));
+        }
+
+        return button;
+    }
+
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 18));
+        button.setBackground(new Color(70, 130, 180));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setPreferredSize(new Dimension(200, 50));
+        return button;
+    }
+
+    private void startGame(MapStrategy strategy) {
+        GameModel newModel = new GameModel();
+        newModel.start(strategy);
+
+        GameController newController = new GameController(newModel);
+        initialize(newModel, newController);
+    }
+
+    @Override
+    public void onModelChange() {
+        updateTileButtons();
+        checkWinCondition();
+    }
+
+    private void updateTileButtons() {
+        Tile[][] board = model.getBoard();
+        int size = board.length;
+
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
+                Tile tile = board[row][col];
+                JButton button = tileButtons[row][col];
+
+                button.setText(tile.getValue() == 0 ? "" : String.valueOf(tile.getValue()));
+                button.setBackground(tile.getValue() == 0 ?
+                        new Color(240, 240, 240) : new Color(70, 130, 180));
+            }
+        }
+    }
+
+    private void checkWinCondition() {
+        if (model.isSolved()) {
+            JOptionPane.showMessageDialog(this,
+                    "Поздравляем! Вы собрали головоломку!",
+                    "Победа",
+                    JOptionPane.INFORMATION_MESSAGE);
+            showMainMenu();
+        }
+    }
+
+    private class TileClickListener implements ActionListener {
+        private final Tile tile;
+
+        public TileClickListener(Tile tile) {
+            this.tile = tile;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            game.swapTiles(row, col);
-                updateBoard();
+            controller.handleTileClick(tile);
         }
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            GameUI gameUI = new GameUI();
-            gameUI.setVisible(true);
+            GameUI view = new GameUI();
+            view.setVisible(true);
         });
     }
 }
