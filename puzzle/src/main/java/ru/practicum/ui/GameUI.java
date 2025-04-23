@@ -35,11 +35,10 @@ public class GameUI extends JFrame implements ModelListener {
         this.model = model;
         this.controller = controller;
         model.addListener(this);
-        createGameBoard();
     }
 
     private void showMainMenu() {
-        getContentPane().removeAll(); // Очистка предыдущего содержимого
+        getContentPane().removeAll();
 
         JPanel menuPanel = new JPanel(new GridLayout(4, 1, 0, 20));
         menuPanel.setBackground(new Color(245, 245, 245));
@@ -111,6 +110,7 @@ public class GameUI extends JFrame implements ModelListener {
     private void initBoardPanel() {
         Tile[][] board = model.getBoard();
         int size = board.length;
+
         boardPanel = new JPanel(new GridLayout(size, size, 5, 5));
         boardPanel.setBackground(new Color(245, 245, 245));
         tileButtons = new JButton[size][size];
@@ -153,7 +153,6 @@ public class GameUI extends JFrame implements ModelListener {
     }
 
     private void startGame(MapStrategy strategy) {
-        // Удаляем старую модель и контроллер
         if (model != null) {
             model.removeListener(this);
         }
@@ -163,7 +162,6 @@ public class GameUI extends JFrame implements ModelListener {
         GameController newController = new GameController(newModel);
         initialize(newModel, newController);
 
-        // Пересоздаем UI
         getContentPane().removeAll();
         createGameBoard();
         revalidate();
@@ -176,7 +174,6 @@ public class GameUI extends JFrame implements ModelListener {
         checkWinCondition();
     }
 
-    // В методе updateTileButtons добавьте обновление ActionListener
     private void updateTileButtons() {
         Tile[][] board = model.getBoard();
         int size = board.length;
@@ -186,20 +183,16 @@ public class GameUI extends JFrame implements ModelListener {
                 Tile tile = board[row][col];
                 JButton button = tileButtons[row][col];
 
-                // Обновление текста и цвета
                 button.setText(tile.getValue() == 0 ? "" : String.valueOf(tile.getValue()));
                 button.setBackground(tile.getValue() == 0 ?
                         new Color(240, 240, 240) : new Color(70, 130, 180));
 
-                // Обновление ActionListener
                 ActionListener[] listeners = button.getActionListeners();
                 if (tile.getValue() != 0) {
-                    // Если плитка не пустая, добавляем обработчик (если его нет)
                     if (listeners.length == 0) {
                         button.addActionListener(new TileClickListener(tile));
                     }
                 } else {
-                    // Если плитка пустая, удаляем все обработчики
                     for (ActionListener al : listeners) {
                         button.removeActionListener(al);
                     }

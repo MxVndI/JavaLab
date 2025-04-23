@@ -14,12 +14,12 @@ public abstract class MapStrategy {
         int value = 1;
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                board[i][j] = new Tile(value++, i, j);
+                board[i][j] = new Tile(i, j, value++);
             }
         }
         int emptyRow = getEmptyTileRow();
         int emptyCol = getEmptyTileCol();
-        board[emptyRow][emptyCol] = new Tile(0, emptyRow, emptyCol);
+        board[emptyRow][emptyCol] = new Tile(emptyRow, emptyCol, 0);
         return board;
     }
 

@@ -2,6 +2,7 @@ package ru.practicum;
 
 import ru.practicum.map.MapStrategy;
 import ru.practicum.model.Tile;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,24 +34,25 @@ public class GameModel {
         int emptyRow = emptyTile.getRow();
         int emptyCol = emptyTile.getCol();
 
-        // Проверяем, является ли выбранная плитка соседней с пустой
         if (!isNeighbor(tileRow, tileCol, emptyRow, emptyCol)) {
-            return; // Если нет, ничего не делаем
+            return;
         }
 
-        // Меняем плитки местами в массиве
-        board[emptyRow][emptyCol] = tile;
-        board[tileRow][tileCol] = emptyTile;
-
-        // Обновляем координаты плиток
         tile.setPosition(emptyRow, emptyCol);
         emptyTile.setPosition(tileRow, tileCol);
 
-        // Обновляем пустую плитку
-        emptyTile = tile;
+        Tile temp = board[emptyRow][emptyCol];
+        board[emptyRow][emptyCol] = tile;
+        board[tileRow][tileCol] = temp;
 
-        // Уведомляем слушателей об изменении модели
+
         notifyListeners();
+        for (int i = 0; i < board.length; i++) {
+            System.out.println();
+            for (int j = 0; j < board[i].length; j++) {
+                System.out.println(board[i][j]);
+            }
+        }
     }
 
     public boolean isSolved() {
@@ -71,7 +73,6 @@ public class GameModel {
     }
 
     private boolean isNeighbor(int tileRow, int tileCol, int emptyRow, int emptyCol) {
-        // Проверяем, является ли плитка соседней с пустой (по горизонтали или вертикали)
         return (Math.abs(tileRow - emptyRow) + Math.abs(tileCol - emptyCol) == 1);
     }
 
