@@ -153,11 +153,21 @@ public class GameUI extends JFrame implements ModelListener {
     }
 
     private void startGame(MapStrategy strategy) {
+        // Удаляем старую модель и контроллер
+        if (model != null) {
+            model.removeListener(this);
+        }
+
         GameModel newModel = new GameModel();
         newModel.start(strategy);
-
         GameController newController = new GameController(newModel);
         initialize(newModel, newController);
+
+        // Пересоздаем UI
+        getContentPane().removeAll();
+        createGameBoard();
+        revalidate();
+        repaint();
     }
 
     @Override
@@ -166,6 +176,7 @@ public class GameUI extends JFrame implements ModelListener {
         checkWinCondition();
     }
 
+    // В методе updateTileButtons добавьте обновление ActionListener
     private void updateTileButtons() {
         Tile[][] board = model.getBoard();
         int size = board.length;
@@ -175,9 +186,24 @@ public class GameUI extends JFrame implements ModelListener {
                 Tile tile = board[row][col];
                 JButton button = tileButtons[row][col];
 
+                // Обновление текста и цвета
                 button.setText(tile.getValue() == 0 ? "" : String.valueOf(tile.getValue()));
                 button.setBackground(tile.getValue() == 0 ?
                         new Color(240, 240, 240) : new Color(70, 130, 180));
+
+                // Обновление ActionListener
+                ActionListener[] listeners = button.getActionListeners();
+                if (tile.getValue() != 0) {
+                    // Если плитка не пустая, добавляем обработчик (если его нет)
+                    if (listeners.length == 0) {
+                        button.addActionListener(new TileClickListener(tile));
+                    }
+                } else {
+                    // Если плитка пустая, удаляем все обработчики
+                    for (ActionListener al : listeners) {
+                        button.removeActionListener(al);
+                    }
+                }
             }
         }
     }

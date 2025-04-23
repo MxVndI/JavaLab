@@ -9,10 +9,6 @@ public abstract class MapStrategy {
 
     protected int size = 5;
 
-    public void setSize(int size) {
-        this.size = size;
-    }
-
     public Tile[][] getBoard() {
         Tile[][] board = new Tile[size][size];
         int value = 1;
