@@ -25,11 +25,9 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public static List<Product> filterNikeBlack(List<Product> products) {
-        ProductPredicate filter = p ->
-                p.getBrand().equals("Nike") && p.getColor().equals("Черный");
+    public static List<Product> filterByPredicate(List<Product> products, ProductPredicate predicate) {
         return products.stream()
-                .filter(filter::test)
+                .filter(predicate::test)
                 .collect(Collectors.toList());
     }
 

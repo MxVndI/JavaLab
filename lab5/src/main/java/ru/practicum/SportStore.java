@@ -1,9 +1,6 @@
 package ru.practicum;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class SportStore {
     public static void main(String[] args) {
@@ -17,6 +14,7 @@ public class SportStore {
 
         Map<String, List<Product>> groupedProducts = ProductService.groupByType(products);
 
+        // Сортировка и вывод по типам
         for (Map.Entry<String, List<Product>> entry : groupedProducts.entrySet()) {
             String type = entry.getKey();
             List<Product> productList = entry.getValue();
@@ -29,9 +27,14 @@ public class SportStore {
             System.out.println("Сортировка по размеру: " + sortedBySize);
         }
 
-        List<Product> nikeBlackProducts = ProductService.filterNikeBlack(products);
+        // Использование универсального фильтра
+        List<Product> nikeBlackProducts = ProductService.filterByPredicate(
+                products,
+                p -> p.getBrand().equals("Nike") && p.getColor().equals("Черный")
+        );
         System.out.println("\nТовары Nike черного цвета: " + nikeBlackProducts);
 
+        // Поиск самых дорогих и дешевых товаров
         for (Map.Entry<String, List<Product>> entry : groupedProducts.entrySet()) {
             String type = entry.getKey();
             Optional<Product> maxProduct = ProductService.findMaxPrice(entry.getValue());
