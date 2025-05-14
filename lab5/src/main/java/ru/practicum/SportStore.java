@@ -1,11 +1,9 @@
 package ru.practicum;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class SportStore {
     public static void main(String[] args) {
@@ -17,43 +15,32 @@ public class SportStore {
                 new Product("Спортивная одежда", "Puma", null, "Черный", 75.00)
         );
 
-        Map<String, List<Product>> productsByType = products.stream()
-                .collect(Collectors.groupingBy(Product::getType));
+        Map<String, List<Product>> groupedProducts = ProductService.groupByType(products);
 
-        productsByType.forEach((type, productList) -> {
+        for (Map.Entry<String, List<Product>> entry : groupedProducts.entrySet()) {
+            String type = entry.getKey();
+            List<Product> productList = entry.getValue();
+
+            List<Product> sortedByPrice = ProductService.sortByPrice(productList);
+            List<Product> sortedBySize = ProductService.sortBySize(productList);
+
             System.out.println("\nТип: " + type);
-
-            List<Product> sortedByPrice = productList.stream()
-                    .sorted(Comparator.comparing(Product::getPrice))
-                    .collect(Collectors.toList());
             System.out.println("Сортировка по цене: " + sortedByPrice);
-
-            List<Product> sortedBySize = productList.stream()
-                    .sorted(Comparator.comparing(
-                            Product::getSize,
-                            Comparator.nullsLast(Comparator.naturalOrder())
-                    ))
-                    .collect(Collectors.toList());
             System.out.println("Сортировка по размеру: " + sortedBySize);
-        });
+        }
 
-        ProductPredicate filter = p ->
-                p.getBrand().equals("Nike") && p.getColor().equals("Черный");
-        List<Product> filteredProducts = products.stream()
-                .filter(filter::test)
-                .collect(Collectors.toList());
-        System.out.println("\nТовары Nike черного цвета: " + filteredProducts);
+        List<Product> nikeBlackProducts = ProductService.filterNikeBlack(products);
+        System.out.println("\nТовары Nike черного цвета: " + nikeBlackProducts);
 
-        productsByType.forEach((type, productList) -> {
-            Optional<Product> maxProduct = productList.stream()
-                    .max(Comparator.comparing(Product::getPrice));
-            Optional<Product> minProduct = productList.stream()
-                    .min(Comparator.comparing(Product::getPrice));
+        for (Map.Entry<String, List<Product>> entry : groupedProducts.entrySet()) {
+            String type = entry.getKey();
+            Optional<Product> maxProduct = ProductService.findMaxPrice(entry.getValue());
+            Optional<Product> minProduct = ProductService.findMinPrice(entry.getValue());
 
             System.out.printf("\nТип: %s%nСамый дорогой: %s%nСамый дешевый: %s%n",
                     type,
-                    maxProduct.orElse(null),
-                    minProduct.orElse(null));
-        });
+                    maxProduct.map(Object::toString).orElse("null"),
+                    minProduct.map(Object::toString).orElse("null"));
+        }
     }
 }
