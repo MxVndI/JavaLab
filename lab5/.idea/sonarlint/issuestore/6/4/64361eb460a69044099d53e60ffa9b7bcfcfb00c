@@ -1,0 +1,11 @@
+
+o
+java:S1192
+"MDefine a constant instead of duplicating this literal "Π§ΠµΡ€Π½Ρ‹ΠΉ" 3 times.(µίΕΉόÿÿÿÿ8ªΩ¤σμ2
+T	java:S106"9Replace this use of System.out or System.err by a logger.(¨φ©)8θ™σμ2
+Z	java:S106"9Replace this use of System.out or System.err by a logger.(»§ΡΎόÿÿÿÿ8¶Ω¤σμ2
+Z	java:S106"9Replace this use of System.out or System.err by a logger.(―Λθ΅ωÿÿÿÿ8·Ω¤σμ2
+Z	java:S106#"9Replace this use of System.out or System.err by a logger.(±Ψδ§ψÿÿÿÿ8ΉΩ¤σμ2
+m
+java:S3457+"Q%n should be used in place of \n to produce the platform-specific line separator.(°t8η™σμ2
+T	java:S106+"9Replace this use of System.out or System.err by a logger.(°t8ΌΩ¤σμ2
